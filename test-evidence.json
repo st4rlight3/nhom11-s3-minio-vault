@@ -1,0 +1,98 @@
+{
+  "checked_at_utc": "2026-10-27T13:23:36.36347+07:00",
+  "target": "real Docker MinIO + FastAPI",
+  "minio_source_release": "RELEASE.2025-10-15T17-29-55Z",
+  "deployment": "single-node/single-volume local lab",
+  "scenarios": [
+    {
+      "scenario": "real_storage_health",
+      "result": "PASS",
+      "detail": "FastAPI connects to the running MinIO container"
+    },
+    {
+      "scenario": "direct_upload_and_finalize",
+      "result": "PASS",
+      "detail": "HTTP PUT goes to localhost:9000; exact version HEAD validated by API"
+    },
+    {
+      "scenario": "presigned_get",
+      "result": "PASS",
+      "detail": "Authorized URL returns the expected bytes"
+    },
+    {
+      "scenario": "bearer_url_reusable_before_expiry",
+      "result": "PASS",
+      "detail": "Same GET URL succeeds again before its 60-second TTL"
+    },
+    {
+      "scenario": "anonymous_bucket_private",
+      "result": "PASS",
+      "detail": "Same object URL without a signature returns HTTP 403"
+    },
+    {
+      "scenario": "cross_owner_denied",
+      "result": "PASS",
+      "detail": "Second authenticated user cannot obtain a URL for the first user document"
+    },
+    {
+      "scenario": "real_object_versions",
+      "result": "PASS",
+      "detail": "Two finalized uploads have distinct real MinIO version IDs"
+    },
+    {
+      "scenario": "put_replay_cannot_change_approved_document",
+      "result": "PASS",
+      "detail": "Unfinalized replay creates a physical version but catalog still downloads approved v2"
+    },
+    {
+      "scenario": "real_delete_marker",
+      "result": "PASS",
+      "detail": "DeleteObject creates a marker; current download is blocked by the application"
+    },
+    {
+      "scenario": "remove_delete_marker_restore",
+      "result": "PASS",
+      "detail": "Application removes the exact recorded marker"
+    },
+    {
+      "scenario": "restore_old_content_as_new_version",
+      "result": "PASS",
+      "detail": "Server-side version COPY creates a new current version with the original bytes"
+    },
+    {
+      "scenario": "size_mismatch_rejected_at_finalize",
+      "result": "PASS",
+      "detail": "Storage accepted the bytes; catalog rejects mismatched size (transport cap not claimed)"
+    },
+    {
+      "scenario": "cors_preflight",
+      "result": "PASS",
+      "detail": "MinIO allows localhost:8000 direct PUT preflight"
+    },
+    {
+      "scenario": "application_audit",
+      "result": "PASS",
+      "detail": "Account audit records confirmation, delete and restoration events"
+    },
+    {
+      "scenario": "url_expired_after_60_seconds",
+      "result": "PASS",
+      "detail": "Identical URL that succeeded twice now returns HTTP 403 after TTL"
+    }
+  ],
+  "passed": 15,
+  "failed": 0,
+  "limits": [
+    "No HA or durability measurement",
+    "No throughput/CPU benchmark",
+    "MIME is not malware/content validation",
+    "25 MiB/250 MiB are application acceptance limits, not physical S3 quota",
+    "No event worker, OIDC, TLS or Object Lock"
+  ],
+  "unit_tests": {
+    "passed": 27,
+    "failed": 0,
+    "scope": "domain + FastAPI TestClient + actual boto3 signer; memory S3 test double"
+  },
+  "launcher_smoke": "PASS: start.ps1 -NoBuild; existing .env and named volumes preserved; bootstrap rerun successful"
+}

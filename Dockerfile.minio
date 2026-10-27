@@ -1,0 +1,17 @@
+# Educational, archived source build. Do not deploy this release to production.
+FROM golang:1.24.8-alpine AS build
+RUN apk add --no-cache git ca-certificates
+ARG MINIO_RELEASE=RELEASE.2025-10-15T17-29-55Z
+RUN git clone --depth 1 --branch ${MINIO_RELEASE} https://github.com/minio/minio.git /src
+WORKDIR /src
+ENV CGO_ENABLED=0
+RUN go build -trimpath -o /out/minio .
+
+FROM alpine:3.22
+RUN apk add --no-cache ca-certificates && addgroup -g 10001 minio && adduser -D -u 10001 -G minio minio && mkdir /data && chown minio:minio /data
+COPY --from=build /out/minio /usr/local/bin/minio
+COPY --from=build /src/LICENSE /licenses/MinIO-AGPL-3.0.txt
+USER minio
+EXPOSE 9000 9001
+ENTRYPOINT ["/usr/local/bin/minio"]
+CMD ["server", "/data", "--console-address", ":9001"]

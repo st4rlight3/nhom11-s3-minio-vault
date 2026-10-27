@@ -1,0 +1,65 @@
+name: nhom11-vault
+services:
+  minio:
+    build:
+      context: .
+      dockerfile: Dockerfile.minio
+    image: nhom11/minio-lab:2025-10-15-source
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Chay python setup_env.py}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Chay python setup_env.py}
+      MINIO_API_CORS_ALLOW_ORIGIN: http://localhost:8000
+      MINIO_BROWSER: "off"
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  bootstrap:
+    build: .
+    image: nhom11/vault-app:1.0.0
+    command: ["python", "bootstrap.py"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET: nhom11-private
+      S3_INTERNAL_ENDPOINT: http://minio:9000
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+  app:
+    build: .
+    image: nhom11/vault-app:1.0.0
+    environment:
+      DATABASE_PATH: /data/vault.db
+      S3_INTERNAL_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
+      S3_BUCKET: nhom11-private
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      DEMO_PASSWORD_HIEU: ${DEMO_PASSWORD_HIEU}
+      DEMO_PASSWORD_MINH: ${DEMO_PASSWORD_MINH}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - app-data:/data
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health',timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+volumes:
+  minio-data:
+  app-data:
