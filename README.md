@@ -9,7 +9,7 @@ Thành viên: Nguyễn Minh Hiếu, Nguyễn Đăng Minh, Phương Bảo Vỹ, P
 ## Tài liệu và sản phẩm
 
 - [Báo cáo Word](docs/Bao_cao_Nhom_11_S3_MinIO.docx)
-- [Slide Canva chỉnh sửa được](https://www.canva.com/d/FhStqU6JITMdV8l)
+- [Slide Canva chỉnh sửa được](https://www.canva.com/design/DAHZLwg6Qcs/t1WKcBFUT2T3WkwGlEy6FQ/edit)
 - [Slide PowerPoint](docs/Slide_Nhom_11_S3_MinIO.pptx)
 - [Bản rà soát kiến thức](docs/Ra_soat_kien_thuc.md)
 - [Nguồn chính thức](docs/sources.json)
